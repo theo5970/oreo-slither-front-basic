@@ -155,34 +155,17 @@ function DrawCircle(x, y, radius, color) {
 /*
  * FPS 표시 (디버깅용)
 */
-let lastFPSDrawTime = 0;
-let fpsAverage = 0;
-const fpsHistoryCount = 10;
-const fpsHistory = new Array(fpsHistoryCount).fill(0);
+const fpsCounter = new FPSCounter();
 
 function DrawFPS() {
-    // 최근 10개의 FPS 저장
-    for (let i = 1; i < fpsHistoryCount; i++) {
-        fpsHistory[i - 1] = fpsHistory[i];
-    }
-    fpsHistory[fpsHistoryCount - 1] = 1.0 / deltaTime;
-
-    // 0.5초마다 드로우할 FPS 업데이트
-    lastFPSDrawTime += deltaTime;
-    if (lastFPSDrawTime > 0.5) {
-        lastFPSDrawTime = 0;
-
-        // FPS 평균 계산
-        fpsAverage = 0;
-        fpsHistory.forEach(fps => fpsAverage += fps);
-        fpsAverage /= fpsHistoryCount;
-    }
+    fpsCounter.Update(deltaTime);
+    const fpsAverage = fpsCounter.fpsAverage;
 
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0); // 변환 리셋
 
     ctx.textAlign = 'right';
     ctx.font = 'normal 16px serif';
-    ctx.fillText('FPS: ' + Math.floor(fpsAverage), ctx.canvas.width - 32, 32);
+    ctx.fillText('FPS: ' + Math.round(fpsAverage), ctx.canvas.width - 32, 32);
     ctx.restore();
 }

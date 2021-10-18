@@ -11,15 +11,25 @@ class Snake {
         }
     }
 
+    /**
+     * @returns {number} 머리 부분의 X 좌표를 가져옵니다.
+     */
     get x() {
         return this.positions[0].x;
     }
 
+    /**
+     * @returns {number} 머리 부분의 Y 좌표를 가져옵니다.
+     */
     get y() {
         return this.positions[0].y;
     }
 
-    // (dx, dy) 만큼 이동
+    /**
+     * 
+     * @param {number} dx X축 이동량
+     * @param {number} dy Y축 이동량
+     */
     Move(dx, dy) {
         const headPosition = this.positions[0];
         headPosition.x += dx;
