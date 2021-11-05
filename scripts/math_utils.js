@@ -29,3 +29,13 @@ function TransformPoint(matrix, point) {
         y: matrix.b * point.x + matrix.d * point.y + matrix.f
     };
 }
+
+// 두 점 사이의 거리를 계산
+function CalculateDistance(x1, y1, x2, y2) {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+}
+
+// 범위기반 랜덤
+function RandomRange(min, max) {
+    return min + Math.random() * (max - min);
+}

@@ -10,6 +10,16 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 const player = new Snake(0, 0);
+let score = 0;
+const foods = [];
+for (let i = 0; i < 20000; i++) { // 테스트 먹이 추가
+    const food = new Food();
+    food.x = RandomRange(-15000, 15000);
+    food.y = RandomRange(-15000, 15000);
+    food.color = `hsl(${RandomRange(0, 360)}deg, 90%, 50%)`;
+    food.radius = 10;
+    foods.push(food);
+}
 
 const minMoveSpeed = 200;
 const maxMoveSpeed = 800;
@@ -83,10 +93,12 @@ function UpdateCamera() {
     ctx.scale(inverseZoom, inverseZoom);
 }
 
+let currentTransform;
+
 // 업데이트 (게임)
 function Update() {
-    let transform = ctx.getTransform();
-    let target = TransformPoint(InverseTransform(transform), mousePosition);    // 마우스 위치를 월드 좌표계로 변환
+    currentTransform = ctx.getTransform();
+    let target = TransformPoint(InverseTransform(currentTransform), mousePosition);    // 마우스 위치를 월드 좌표계로 변환
 
     let dx = target.x - player.x;
     let dy = target.y - player.y;
@@ -101,11 +113,49 @@ function Update() {
         speed = maxMoveSpeed;
     }
 
-    if (distance > 100) {
-        player.Move(speed * dx * deltaTime, speed * dy * deltaTime);
-    }
+    player.Move(speed * dx * deltaTime, speed * dy * deltaTime);
     player.Update();
+
+    CheckCollisions();
 }
+
+// 카메라에 표시되는 지 확인
+function IsVisibleFromCamera(x, y) {
+    const tp = TransformPoint(currentTransform, { x, y });
+
+    const viewportWidth = ctx.canvas.width * zoom;
+    const viewportHeight = ctx.canvas.height * zoom;
+    return ((tp.x > 0 && tp.x < viewportWidth) && (tp.y > 0 && tp.y < viewportHeight));
+}
+
+// 먹이랑 지렁이 머리 충돌체크
+function CheckCollisions() {
+    for (let i = 0; i < foods.length; i++) {
+        const food = foods[i];
+        const distance = CalculateDistance(player.x, player.y, food.x, food.y);
+
+        if (distance < player.radius + food.radius) {
+            score += 10;
+            foods.splice(i, 1);
+            player.Grow();
+            i--;
+        }
+    }
+}
+
+// 먹이 부족할 때 추가하기
+function AddSomeFoods() {
+    const countToAdd = 2000 - foods.length + 1;
+    for (let i = 0; i < countToAdd; i++) {
+        const food = new Food();
+        food.x = RandomRange(-15000, 15000);
+        food.y = RandomRange(-15000, 15000);
+        food.color = `hsl(${RandomRange(0, 360)}deg, 90%, 50%)`;
+        food.radius = 10;
+        foods.push(food);
+    }
+}
+setInterval(AddSomeFoods, 5000);
 
 // 그리기 (렌더링)
 function Render() {
@@ -115,8 +165,9 @@ function Render() {
     DrawRectangle(0, 0, 100, 100, 'blue');
     DrawRectangle(500, 500, 100, 100, 'red');
 
+    DrawFoods();
     DrawSnake(player);
-    DrawFPS();
+    DrawUI();
 }
 
 // 뱀 그리기 (+ 추후에 최적화 필요)
@@ -126,7 +177,19 @@ function DrawSnake(snake) {
 
         const h = 300 * (i / snake.positions.length);
         const color = 'hsl(' + h + 'deg, 100%, 60%)';   // 무지개 색상으로 알록달록하게~
-        DrawCircle(bonePosition.x, bonePosition.y, snake.radius, color); 
+        DrawCircle(bonePosition.x, bonePosition.y, snake.radius, color);
+    }
+}
+
+
+// 먹이 그리기
+function DrawFoods() {       
+    for (let i = 0; i < foods.length; i++) {
+        const food = foods[i];
+
+        if (IsVisibleFromCamera(food.x, food.y)) {
+            DrawCircle(food.x, food.y, food.radius, food.color);
+        }
     }
 }
 // 사각형 그리기
@@ -153,19 +216,24 @@ function DrawCircle(x, y, radius, color) {
 }
 
 /*
- * FPS 표시 (디버깅용)
+ * FPS & 점수 표시 (디버깅용)
 */
 const fpsCounter = new FPSCounter();
 
-function DrawFPS() {
+function DrawUI() {
     fpsCounter.Update(deltaTime);
     const fpsAverage = fpsCounter.fpsAverage;
 
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0); // 변환 리셋
 
+    ctx.fillStyle = 'white';
     ctx.textAlign = 'right';
     ctx.font = 'normal 16px serif';
     ctx.fillText('FPS: ' + Math.round(fpsAverage), ctx.canvas.width - 32, 32);
+
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 48px serif';
+    ctx.fillText(score, ctx.canvas.width / 2, 64);
     ctx.restore();
 }

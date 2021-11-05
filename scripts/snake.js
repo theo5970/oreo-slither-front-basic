@@ -5,7 +5,7 @@ class Snake {
         this.spacing = 10;      // 관절 사이 간격
 
         let newX = y;
-        for (let i = 0; i < 300; i++) {
+        for (let i = 0; i < 10; i++) {
             newX -= this.radius * 2;
             this.positions.push({ x: newX, y: y });
         }
@@ -55,6 +55,13 @@ class Snake {
             // 관절 위치 업데이트
             currentPosition.x = previousPosition.x + this.spacing * Math.cos(angle);
             currentPosition.y = previousPosition.y + this.spacing * Math.sin(angle);
+        }
+    }
+
+    Grow() {
+        const lastPosition = this.positions[this.positions.length - 1];
+        for (let i = 0; i < 1; i++) {
+            this.positions.push({x: lastPosition.x, y: lastPosition.y});
         }
     }
 }
