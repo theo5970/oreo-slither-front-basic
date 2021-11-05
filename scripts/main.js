@@ -227,11 +227,13 @@ function DrawUI() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0); // 변환 리셋
 
+    // FPS 표시
     ctx.fillStyle = 'white';
     ctx.textAlign = 'right';
     ctx.font = 'normal 16px serif';
     ctx.fillText('FPS: ' + Math.round(fpsAverage), ctx.canvas.width - 32, 32);
 
+    // 점수 표시
     ctx.textAlign = 'center';
     ctx.font = 'bold 48px serif';
     ctx.fillText(score, ctx.canvas.width / 2, 64);
